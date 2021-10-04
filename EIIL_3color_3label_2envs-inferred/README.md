@@ -1,9 +1,8 @@
 # Environment Inference for Invariant Learning
-This code accompanies the paper [Environment Inference for Invariant Learning](https://arxiv.org/abs/2010.07249), which appears at ICML 2021.
+Research test for Invariant Risk Minimization for unknown groups. <br>
+Taero Kim, University of Seoul.
 
-Thanks to my wonderful co-authors [Jörn-Henrik Jacobsen](https://github.com/jhjacobsen/) and [Richard Zemel](https://www.cs.toronto.edu/~zemel/inquiry/home.php).
-
-The InvariantRiskMinimization subdirectory is modified from https://github.com/facebookresearch/InvariantRiskMinimization, and has its own license.
+This code is moidified from [Environment Inference for Invariant Learning](https://github.com/ecreager/eiil), which appears at ICML 2021 with [Environment Inference for Invariant Learning](https://arxiv.org/abs/2010.07249).
 
 ## Reproducing paper results
 
