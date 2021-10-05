@@ -36,11 +36,12 @@ def get_envs(cuda=True, flags=None):
       pure_size : int; noise 결과의 모든 경우의 수 (가능한 label 개수, color 개수)
       label 개수와 color 개수가 다르면 다른 함수 필요
       '''
-      noise_name = np.arange(0, pure_size)
-      for idx in range(len(labels)):
+      lab = labels.clone()
+      for idx in range(len(lab)):
+        noise_name = np.arange(0, pure_size)
         if noise[idx]:
-          labels[idx] = np.random.choice(np.delete(noise_name, labels[idx].long()))
-      return labels
+          lab[idx] = np.random.choice(np.delete(noise_name, lab[idx].long()))
+      return lab
     ###
 
     samples = dict()
@@ -56,7 +57,6 @@ def get_envs(cuda=True, flags=None):
         labels[i] = 0
       else:
         labels[i] = 1
-    labels = labels.float()
     ###
 
     samples.update(preliminary_labels=labels)
@@ -75,7 +75,7 @@ def get_envs(cuda=True, flags=None):
     images[range(len(images)), ((colors+2)%3).long(), :, :] *= 0 ###
     ### images[torch.tensor(range(len(images))), (1-colors).long(), :, :] *= 0
     images = (images.float() / 255.)
-    labels = labels[:, None]
+    #labels = labels[:, None]
     if cuda and torch.cuda.is_available():
       images = images.cuda()
       labels = labels.cuda()

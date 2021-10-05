@@ -16,8 +16,8 @@ def main(flags):
     erm=load_results(flags.erm_results_dir),
     irm=load_results(flags.irm_results_dir),
     eiil=load_results(flags.eiil_results_dir),
-    eiil_cb=load_results(flags.eiil_cb_results_dir),
-    cb=load_results(flags.cb_results_dir),
+    #eiil_cb=load_results(flags.eiil_cb_results_dir),
+    #cb=load_results(flags.cb_results_dir),
     gray=load_results(flags.gray_results_dir),
   )
   num_methods = len(results)
@@ -40,8 +40,8 @@ if __name__ == '__main__':
   parser.add_argument('--erm_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/erm')
   parser.add_argument('--irm_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/irm')
   parser.add_argument('--eiil_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/eiil')
-  parser.add_argument('--eiil_cb_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/eiil_cb')
-  parser.add_argument('--cb_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/cb')
+  #parser.add_argument('--eiil_cb_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/eiil_cb')
+  #parser.add_argument('--cb_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/cb')
   parser.add_argument('--gray_results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist/gray')
   parser.add_argument('--results_dir', type=str, default='/scratch/gobi1/creager/opt_env/cmnist_results/acc_table',
                      help='where tex tables should be saved')

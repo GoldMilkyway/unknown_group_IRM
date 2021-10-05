@@ -80,7 +80,8 @@ def get_envs(cuda=True, flags=None):
         images[range(len(images)), ((colors + 2) % 3).long(), :, :] *= 0  ###
         ### images[torch.tensor(range(len(images))), (1-colors).long(), :, :] *= 0
         images = (images.float() / 255.)
-        labels = labels[:, None]
+        print('label', labels.size())
+        #labels = labels[:, None]
         if cuda and torch.cuda.is_available():
             images = images.cuda()
             labels = labels.cuda()

@@ -4,6 +4,8 @@ from torch import autograd
 from torch import nn
 from torch import optim
 from tqdm import tqdm
+from py3nvml import nvidia_smi
+
 from torch.autograd import Variable
 
 #def nll(logits, y, reduction='mean'):
@@ -13,26 +15,24 @@ from torch.autograd import Variable
 #  preds = (logits > 0.).float()
 #  return ((preds - y).abs() < 1e-2).float().mean()
 
-def nll(logits, y, reduction='mean'):
-  logsoft = nn.LogSoftmax(dim=1)
-  lossnll = nn.NLLLoss(reduction=reduction)
-  return lossnll(logsoft(logits), y.squeeze().long())
+#def nll(logits, y, reduction='mean'):
+#  logsoft = nn.LogSoftmax(dim=1)
+#  lossnll = nn.NLLLoss(reduction=reduction)
+# return lossnll(logsoft(logits), y.long())
 
 def nll2(logits, y, reduction='mean'):
-  return nn.functional.cross_entropy(logits,y.squeeze().long(), reduction=reduction)
+  return nn.functional.cross_entropy(logits,y.long(), reduction=reduction)
 
 def mean_accuracy(logits, y):
-  with torch.no_grad():
-    soft = nn.Softmax(dim=1)
-    exps = soft(logits).float()
-    y_pred = torch.argmax(exps, dim=1).float()
+  soft = nn.Softmax(dim=1)
+  exps = soft(logits).float()
+  y_pred = torch.argmax(exps, dim=1).float()
   return ((y_pred- y).abs() < 1e-2).float().mean()
 
 def penalty(logits, y):
   scale = torch.tensor(1.).cuda().requires_grad_()
   loss = nll2(logits * scale, y)
   #loss = Variable(loss, requires_grad = True)
-  print(loss.grad_fn, scale.grad_fn, loss.requires_grad, loss.requires_grad)
   grad = autograd.grad(loss, [scale], create_graph=True)[0]
   return torch.sum(grad**2)
 
@@ -74,7 +74,7 @@ def split_data_opt(envs, model, n_steps=10000, n_samples=-1, lr=0.001,
     logits = model(joined_train_envs['images'])
     logits = logits.detach()
 
-  loss = nll(logits * scale, joined_train_envs['labels'].cuda(), reduction='none')
+  loss = nll2(logits * scale, joined_train_envs['labels'].cuda(), reduction='none')
 
   env_w = torch.randn(len(logits)).cuda().requires_grad_()
   optimizer = optim.Adam([env_w], lr=lr)
@@ -160,10 +160,10 @@ def train_irm_batch(model, envs, flags):
       # Rescale the entire loss to keep gradients in a reasonable range
       loss /= penalty_weight
 
-    if not flags.color_based_eval:
-      optimizer.zero_grad()
-      loss.backward()
-      optimizer.step()
+    #if not flags.color_based_eval:
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
 
     test_acc = envs[2]['acc']
     if step % 100 == 0:

@@ -67,28 +67,21 @@ def main(flags):
 
     ##def nll(logits, y, reduction='mean'):
     ##  return nn.functional.binary_cross_entropy_with_logits(logits, y, reduction=reduction)
-    def nll(logits, y, reduction='mean'):
-      print(y.size())
-      logsoft = nn.LogSoftmax(dim=1)
-      lossnll = nn.NLLLoss(reduction='mean')
-      return lossnll(logsoft(logits), y.squeeze().long())
+    def nll2(logits, y, reduction='mean'):
+      return nn.functional.cross_entropy(logits, y.long(), reduction=reduction)
 
-    ##def mean_accuracy(logits, y):
-    ## preds = (logits > 0.).float()
-    ##  return ((preds - y).abs() < 1e-2).float().mean()
     def mean_accuracy(logits, y):
-      with torch.no_grad():
-        soft = nn.Softmax(dim=1)
-        exps = soft(logits)
-        y_pred = torch.argmax(exps, dim=1)
-        return ((y_pred - y).abs() < 1e-2).float().mean()
+      soft = nn.Softmax(dim=1)
+      exps = soft(logits).float()
+      y_pred = torch.argmax(exps, dim=1).float()
+      return ((y_pred - y).abs() < 1e-2).float().mean()
 
     def penalty(logits, y):
       scale = torch.tensor(1.).cuda().requires_grad_()
-      loss = nll(logits * scale, y).requires_grad_()
-      print(type(loss), loss.size(), 'irm_cmnist')
+      loss = nll2(logits * scale, y)
+      # loss = Variable(loss, requires_grad = True)
       grad = autograd.grad(loss, [scale], create_graph=True)[0]
-      return torch.sum(grad**2)
+      return torch.sum(grad ** 2)
 
     # Train loop
 
@@ -112,7 +105,7 @@ def main(flags):
         for step in range(flags.steps):
           for env in envs:
             logits = mlp_pre(env['images']) ###
-            env['nll'] = nll(logits, env['labels']).detach() ###
+            env['nll'] = nll2(logits, env['labels']) ###
             env['acc'] = mean_accuracy(logits, env['labels'])
             env['penalty'] = penalty(logits, env['labels'])
 

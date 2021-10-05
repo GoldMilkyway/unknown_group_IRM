@@ -11,34 +11,10 @@ PENALTY_ANNEAL_ITERS=190
 PENALTY_WEIGHT=191257.18613115903
 STEPS=501
 ROOT=${2-/scratch/gobi1/creager/opt_env/cmnist/EIIL_Research_results/EIIL_3color_3label_2envs-inferred}
-# RNUM=$(printf "%05d" $(($RANDOM$RANDOM$RANDOM % 100000)))
+RNUM=$(printf "%05d" $(($RANDOM$RANDOM$RANDOM % 100000)))
 TAG=$(date +'%Y-%m-%d')--$LABEL_NOISE
 ROOT=$ROOT/label_noise_sweep/$TAG
 
-# ERM
-python -u -m opt_env.irm_cmnist \
-  --results_dir $ROOT/erm \
-  --n_restarts $N_RESTARTS \
-  --hidden_dim $HIDDEN_DIM \
-  --l2_regularizer_weight $L2_REGULARIZER_WEIGHT \
-  --lr $LR \
-  --label_noise $LABEL_NOISE \
-  --penalty_anneal_iters 0 \
-  --penalty_weight 0.0 \
-  --steps $STEPS
-
-# IRM
-python -u -m opt_env.irm_cmnist \
-  --results_dir $ROOT/irm \
-  --n_restarts $N_RESTARTS \
-  --hidden_dim $HIDDEN_DIM \
-  --l2_regularizer_weight $L2_REGULARIZER_WEIGHT \
-  --lr $LR \
-  --label_noise $LABEL_NOISE \
-  --penalty_anneal_iters $PENALTY_ANNEAL_ITERS \
-  --penalty_weight $PENALTY_WEIGHT \
-  --steps $STEPS
-  
 # EIIL
 python -u -m opt_env.irm_cmnist \
   --results_dir $ROOT/eiil \
@@ -64,6 +40,32 @@ python -u -m opt_env.irm_cmnist \
   --penalty_weight 0.0 \
   --steps $STEPS \
   --grayscale_model
+
+# ERM
+python -u -m opt_env.irm_cmnist \
+  --results_dir $ROOT/erm \
+  --n_restarts $N_RESTARTS \
+  --hidden_dim $HIDDEN_DIM \
+  --l2_regularizer_weight $L2_REGULARIZER_WEIGHT \
+  --lr $LR \
+  --label_noise $LABEL_NOISE \
+  --penalty_anneal_iters 0 \
+  --penalty_weight 0.0 \
+  --steps $STEPS
+
+# IRM
+python -u -m opt_env.irm_cmnist \
+  --results_dir $ROOT/irm \
+  --n_restarts $N_RESTARTS \
+  --hidden_dim $HIDDEN_DIM \
+  --l2_regularizer_weight $L2_REGULARIZER_WEIGHT \
+  --lr $LR \
+  --label_noise $LABEL_NOISE \
+  --penalty_anneal_iters $PENALTY_ANNEAL_ITERS \
+  --penalty_weight $PENALTY_WEIGHT \
+  --steps $STEPS
+  
+
 
 # Build latex tables
 # accuracy
