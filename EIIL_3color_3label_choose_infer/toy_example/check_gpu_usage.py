@@ -6,7 +6,8 @@ deviceCount = nvidia_smi.nvmlDeviceGetCount()
 for i in range(deviceCount):
     handle = nvidia_smi.nvmlDeviceGetHandleByIndex(i)
     info = nvidia_smi.nvmlDeviceGetMemoryInfo(handle)
-    print("Before Loop: Device {}: {}, Memory : ({:.2f}% free): {}(total), {} (free), {} (used)".format(i,
+    print("Before Loop: Device {}: {},"
+          " Memory : ({:.2f}% free): {}(total), {} (free), {} (used)".format(i,
                                                                                                         nvidia_smi.nvmlDeviceGetName(
                                                                                                             handle),
                                                                                                         100 * info.free / info.total,

@@ -81,16 +81,22 @@ def split_data_opt(envs, model, n_steps=10000, n_samples=-1, lr=0.001,
 
   with tqdm(total=n_steps, position=1, bar_format='{desc}', desc='AED Loss: ', disable=no_tqdm) as desc:
     for i in tqdm(range(n_steps), disable=no_tqdm):
+      soft = nn.Softmax(env_w, dim=1)
+      sort = torch.sort(soft, dim=1, descending=True).requires_grad_()
       # penalty for env a
-      lossa = (loss.squeeze() * env_w.sigmoid()).mean()
+      lossa = (loss.squeeze() * sort[0]).mean()
       grada = autograd.grad(lossa, [scale], create_graph=True)[0]
       penaltya = torch.sum(grada**2)
       # penalty for env b
-      lossb = (loss.squeeze() * (1-env_w.sigmoid())).mean()
+      lossb = (loss.squeeze() * sort[1]).mean()
       gradb = autograd.grad(lossb, [scale], create_graph=True)[0]
       penaltyb = torch.sum(gradb**2)
+      # penalty for env c
+      lossc = (loss.squeeze() * sort[2]).mean()
+      gradc = autograd.grad(lossc, [scale], create_graph=True)[0]
+      penaltyc = torch.sum(gradc**2)
       # negate
-      npenalty = - torch.stack([penaltya, penaltyb]).mean()
+      npenalty = - torch.stack([penaltya, penaltyb, penaltyc]).mean()
       # step
       optimizer.zero_grad()
       npenalty.backward(retain_graph=True)
@@ -101,11 +107,12 @@ def split_data_opt(envs, model, n_steps=10000, n_samples=-1, lr=0.001,
 
   # split envs based on env_w threshold
   new_envs = []
-  idx0 = (env_w.sigmoid()>.5)
+  idx0 = (env_w.sigmoid()>.5) # 1
   idx1 = (env_w.sigmoid()<=.5)
+  idx2 =
   # train envs
   # NOTE: envs include original data indices for qualitative investigation
-  for _idx in (idx0, idx1):
+  for _idx in (idx0, idx1, idx2):
     new_env = dict()
     for k, v in joined_train_envs.items():
       if k == 'paths':  # paths is formatted as a list of str, not ndarray or tensor
