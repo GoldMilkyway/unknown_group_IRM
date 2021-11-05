@@ -40,7 +40,7 @@ def split_data_opt(envs, model, n_steps=10000, n_samples=-1, lr=0.001,
                     batch_size=None, join=True, no_tqdm=False):
   """Learn soft environment assignment."""
 
-  if join:  # assumes first two entries in envs list are the train sets to joined
+  if join:  # assumes first two entries in envs list are the train sets to be joined
     print('pooling envs')
     # pool all training envs (defined as each env in envs[:-1])
     joined_train_envs = dict()

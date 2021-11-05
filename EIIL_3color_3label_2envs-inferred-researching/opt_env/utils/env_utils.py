@@ -6,7 +6,10 @@ from torchvision import datasets
 
 
 def get_envs(cuda=True, flags=None):
-
+  """
+  from irm_cmnist line 58
+  """
+  ## flags의 Default 설정
   if flags is None:  # configure data generation like in original IRM paper
     @attr.s
     class DefaultFlags(object):
@@ -16,11 +19,13 @@ def get_envs(cuda=True, flags=None):
       test_env__color_noise = attr.ib(default=0.9)
       label_noise = attr.ib(default=0.25)
     flags = DefaultFlags()
-    
-  def _make_environment(images, labels, e):
+
+  ## color noised env 생성
+  def _make_environment(images, labels, noise_value):
 
     # NOTE: low e indicates a spurious correlation from color to (noisy) label
 
+    ## p보다 작으면 1, 크면 0
     def torch_bernoulli(p, size):
       return (torch.rand(size) < p).float()
     '''
@@ -29,16 +34,17 @@ def get_envs(cuda=True, flags=None):
     '''
 
     ###
-    def make_noise(labels, noise, pure_size):
-      '''
+    ## noise 적용
+    def make_noise(labels, noise, pure_label):
+      """
       labels : torch.tensor; labels
       noise : torch.tensor; label_noise or color_noise
       pure_size : int; noise 결과의 모든 경우의 수 (가능한 label 개수, color 개수)
       label 개수와 color 개수가 다르면 다른 함수 필요
-      '''
+      """
       lab = labels.clone()
       for idx in range(len(lab)):
-        noise_name = np.arange(0, pure_size)
+        noise_name = np.arange(0, pure_label)
         if noise[idx]:
           lab[idx] = np.random.choice(np.delete(noise_name, lab[idx].long()))
       return lab
@@ -48,7 +54,7 @@ def get_envs(cuda=True, flags=None):
     # 2x subsample for computational convenience
     images = images.reshape((-1, 28, 28))[:, ::2, ::2]
     # Assign a binary label based on the digit; flip label with probability 0.25
-
+    xxxx = 0
     ### labels 할당 수정 (2개 -> 3개)
     for i in range(len(labels)):
       if labels[i] < 3:
@@ -57,31 +63,32 @@ def get_envs(cuda=True, flags=None):
         labels[i] = 0
       else:
         labels[i] = 1
-    ###
 
+    ###
+    pure_label = 3
     samples.update(preliminary_labels=labels)
     label_noise = torch_bernoulli(flags.label_noise, len(labels))
-    labels = make_noise(labels, label_noise, 3) ###
+    labels = make_noise(labels, label_noise, pure_label) ###
     samples.update(final_labels=labels)
     samples.update(label_noise=label_noise)
     # Assign a color based on the label; flip the color with probability e
-    color_noise = torch_bernoulli(e, len(labels))
-    colors = make_noise(labels, color_noise, 3) ###
+    color_noise = torch_bernoulli(noise_value, len(labels))
+    colors = make_noise(labels, color_noise, pure_label) ###
     samples.update(colors=colors)
     samples.update(color_noise=color_noise)
     # Apply the color to the image by zeroing out the other color channel
-    images = torch.stack([images, images, images], dim=1) ###
-    images[range(len(images)), ((colors+1)%3).long(), :, :] *= 0 ###
-    images[range(len(images)), ((colors+2)%3).long(), :, :] *= 0 ###
-    ### images[torch.tensor(range(len(images))), (1-colors).long(), :, :] *= 0
+    images = torch.stack([images, images, images], dim=1) ### CMNIST를 3CHANNEL로 생각
+    images[range(len(images)), ((colors+1)%3).long(), :, :] *= 0 ### 3COLOR 중 하나를 제거
+    images[range(len(images)), ((colors+2)%3).long(), :, :] *= 0 ### 3COLOR 중 남은 둘 중 하나를 제거
     images = (images.float() / 255.)
     #labels = labels[:, None]
     if cuda and torch.cuda.is_available():
-      images = images.cuda()
+      images = images.cuda() ## -1 x 14 x 14 x 3
       labels = labels.cuda()
     samples.update(images=images, labels=labels)
     return samples
 
+  ## envs의 list생성 [env1, env2, test]
   mnist = datasets.MNIST('~/datasets/mnist', train=True, download=True)
   mnist_train = (mnist.data[:50000], mnist.targets[:50000])
   mnist_val = (mnist.data[50000:], mnist.targets[50000:])
@@ -96,7 +103,7 @@ def get_envs(cuda=True, flags=None):
     _make_environment(mnist_train[0][1::2], mnist_train[1][1::2], flags.train_env_2__color_noise),
     _make_environment(mnist_val[0], mnist_val[1], flags.test_env__color_noise)
   ]
-  return envs
+  return envs ## list of color noised environment
 
 
 def get_envs_with_indices():

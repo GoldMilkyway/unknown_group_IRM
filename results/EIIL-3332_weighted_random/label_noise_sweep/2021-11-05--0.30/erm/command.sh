@@ -1,0 +1,1 @@
+python D:\eiil_research\eiil-3332_weighted_random\opt_env\irm_cmnist.py --results_dir D:/EIIL_Research/results/EIIL-3332_weighted_random/label_noise_sweep/2021-11-05--0.30/erm --n_restarts 10 --hidden_dim 390 --l2_regularizer_weight 0.00110794568 --lr 0.0004898536566546834 --label_noise 0.30 --penalty_anneal_iters 0 --penalty_weight 0.0 --steps 501

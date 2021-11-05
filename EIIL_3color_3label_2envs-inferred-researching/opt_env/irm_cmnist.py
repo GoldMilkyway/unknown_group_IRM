@@ -18,10 +18,12 @@ from opt_env.utils.model_utils import load_mlp
 from opt_env.utils.model_utils import ColorBasedClassifier
 
 def main(flags):
-  
+
+  ##flags의 결과 저장 위치 파일이 존재하지 않는다면 폴더 생성
   if not os.path.exists(flags.results_dir):
     os.makedirs(flags.results_dir)
-  
+
+  ##재생산성을 위한 이 파일과 명령어 저장
   # save this file and command for reproducibility
   if flags.results_dir != '.':
     with open(__file__, 'r') as f:
@@ -43,16 +45,17 @@ def main(flags):
   print('results will be found here:')
   print(flags.results_dir)
 
+  ## 시작
   final_train_accs = []
   final_test_accs = []
-  for restart in range(flags.n_restarts):
+  for restart in range(flags.n_restarts): #### 여기서 restart는 epoch인가 iteration인가 ?
     print("Restart", restart)
 
-    rng_state = np.random.get_state()
-    np.random.set_state(rng_state)
+    rng_state = np.random.get_state()  ## random seed를 저장
+    np.random.set_state(rng_state)     ## 저장한 seed 적용
 
     # Build environments
-    envs = get_envs(flags=flags)
+    envs = get_envs(flags=flags)       ##
 
     # Define and instantiate the model
 #    if flags.color_based:  # use color-based reference classifier without trainable params
@@ -100,7 +103,7 @@ def main(flags):
     if flags.eiil:
       #if flags.color_based:
       #  print('Color-based reference classifier was specified, to skipping pre-training.')
-      if True: ###
+      if True: ### Reference Classifier
         optimizer_pre = optim.Adam(mlp_pre.parameters(), lr=flags.lr)
         for step in range(flags.steps):
           for env in envs:
@@ -117,6 +120,7 @@ def main(flags):
           for w in mlp_pre.parameters():
             weight_norm += w.norm().pow(2)
 
+          #L2 Regularization
           loss = train_nll.clone()
           loss += flags.l2_regularizer_weight * weight_norm
 
